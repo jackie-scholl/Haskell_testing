@@ -1,0 +1,131 @@
+# Chapter 17
+
+## 17.5 Applicative in use
+
+### Exercises: Lookups
+
+
+1. added = (+3) <$> (lookup 3 $ zip [1, 2, 3] [4, 5, 6])
+
+2. tupled = liftA2 (,) y z
+
+3. maxed = liftA2 max' x y
+
+4. liftA2 (+) x y
+
+
+### Exercise: Identity Instance
+
+newtype Identity a = Identity a
+    deriving (Eq, Ord, Show)
+
+instance Functor Identity where
+    fmap f (Identity a) = Identity (f a)
+
+instance Applicative Identity where
+    pure = Identity
+    (Identity f) <*> (Identity x) = Identity (f x)
+    
+    
+### Exercise: Constant Instance
+
+newtype Constant a b =
+    Constant { getConstant :: a }
+    deriving (Eq, Ord, Show)
+
+instance Functor (Constant a) where
+    fmap f (Constant a) = Constant a
+
+instance Monoid a
+        => Applicative (Constant a) where
+    pure _ = Constant mempty
+    (Constant x) <*> (Constant y) = Constant (x <> y)
+
+
+### Exercise: Fixer Upper
+
+1. const <$> Just "Hello" <*> pure "World"
+
+2. (,,,) <$> Just 90 <*> Just 10 <*> Just "Tierness" <*> pure [1, 2, 3]
+
+
+## 17.8 ZipList
+
+### List Applicative Exercise
+
+data List a =
+    Nil
+    | Cons a (List a)
+    deriving (Eq, Show)
+
+instance Functor List where
+    fmap _ Nil = Nil
+    fmap f (Cons x xs) = Cons (f x) (fmap f xs)
+
+append :: List a -> List a -> List a
+append Nil ys = ys
+append (Cons x xs) ys =
+    Cons x $ xs `append` ys
+    
+instance Applicative List where
+    pure = undefined
+    (<*>) Nil _ = Nil
+    (<*>) _ Nil = Nil
+    (<*>) (Cons f fs) xs@(Cons _ _) = append (fmap f xs) (fs <*> xs) 
+
+
+### ZipList Applicative Exercise
+
+newtype ZipList' a =
+    ZipList' (List a)
+    deriving (Eq, Show)
+
+{- instance Eq a => EqProp (ZipList' a) where
+    xs =-= ys = xs' `eq` ys'
+        where xs' = let (ZipList' l) = xs
+                    in take' 3000 l
+              ys' = let (ZipList' l) = ys
+                    in take' 3000 l -}
+
+instance Functor ZipList' where
+    fmap f (ZipList' xs) =
+        ZipList' $ fmap f xs
+
+instance Applicative ZipList' where
+    pure = undefined
+    (<*>) (ZipList' Nil) _ = (ZipList' Nil)
+    (<*>) _ (ZipList' Nil) = (ZipList' Nil)
+    (<*>) (ZipList' (Cons f fs)) (ZipList' (Cons x xs)) = (ZipList' (Cons (f x) (fs <*> xs)))
+
+
+
+### Exercise: Variations on Either
+
+data Validation e a =
+    Failure e
+    | Success a
+    deriving (Eq, Show)
+
+instance Functor (Validation e) where
+    fmap f (Failure e) = 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

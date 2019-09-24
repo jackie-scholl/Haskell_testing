@@ -1,0 +1,29 @@
+# Chapter 13: Building Projects
+
+# https://www.youtube.com/watch?v=VQ9i-V2i6W0
+
+## 13.6 More on importing modules
+
+### Intermission: Check your understanding
+
+1. 'forever' and 'when'
+2. Data.Bits, Database.Blacktip.Types
+3. Some useful datatypes for working with a database, perhaps?
+4. a) MV  == Control.Concurrent.MVar
+      FPC == Filesystem.Path.CurrentOS
+      CC  == Control.Concurrent
+   b) Filesystem
+   c) Control.Monad
+   
+
+
+
+## Stack doesn't work, can't do any of the rest :((
+
+
+
+
+
+
+
+

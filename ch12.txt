@@ -1,0 +1,165 @@
+# Chapter 12: Signaling adversity
+
+## 12.5 Chapter Exercises
+
+### Determine the kinds
+
+1. *
+2. *, * -> *
+
+### String processing
+
+1. replaceThe xs = concat $ intersperse " " $ map f (words xs) where
+       f "the" = "a"
+       f x = x
+
+2. ahh, this seems really hard! come back
+    Update: I came back and did it!!!!!
+
+
+data CountingState = WasJustThe | WasNotJustThe deriving (Eq, Show)
+countTheBeforeVowel :: String -> Integer
+countTheBeforeVowel str = snd $ foldl f (WasNotJustThe, 0) $ words str
+    where f (x, y) word
+            | word == "the" = (WasJustThe,    y)
+            | word == []    = (WasNotJustThe, y)
+            | ((word !! 0) `elem` "aeiou") && (x == WasJustThe) = (WasNotJustThe, y+1)
+            | otherwise     = (WasNotJustThe, y) 
+
+
+3. countVowels = length . filter (flip elem "aeiou")
+
+### Validate the word
+
+mkWord str = if 2 * countVowels str > length str then Nothing else Just str
+
+### It’s only Natural
+
+1. natToInteger Zero = 0
+   natToInteger (Succ x) = 1 + natToInteger x
+
+2.
+integerToNat :: Integer -> Maybe Nat
+integerToNat n
+    | n < 0  = Nothing
+    | n == 0 = Just Zero
+    | n > 0  = map' Succ (integerToNat $ n - 1)
+    where map' f (Just x) = Just (f x)
+          map' f (Nothing) = Nothing
+
+
+### Small library for Maybe
+
+
+1.
+isJust :: Maybe a -> Bool
+isJust (Just _)  = True
+isJust (Nothing) = False
+
+isNothing :: Maybe a -> Bool
+isNothing (Just _)  = False
+isNothing (Nothing) = True
+
+2.
+mayybee :: b -> (a -> b) -> Maybe a -> b
+mayybee _ f (Just x) = f x
+mayybee def f (Nothing) = def
+
+3.
+fromMaybe :: a -> Maybe a -> a
+fromMaybe def x = mayybee def id x
+
+4.
+maybeToList :: Maybe a -> [a]
+maybeToList Nothing = []
+maybeToList (Just x) = [x]
+
+listToMaybe :: [a] -> Maybe a
+listToMaybe []    = Nothing
+listToMaybe (x:_) = Just x
+
+5.
+catMaybes :: [Maybe a] -> [a]
+catMaybes xs = foldr f [] xs where
+    f (Just x) xs2 = x : xs2
+    f (Nothing) xs2 = xs2
+
+6.
+flipMaybe :: [Maybe a] -> Maybe [a]
+flipMaybe xs = foldr f (Just []) xs where
+    f _ Nothing = Nothing
+    f (Just x) (Just xs2) = Just (x : xs2)
+    f (Nothing) (Just xs2) = Nothing
+
+
+### Small library for Either
+
+1. lefts' xs = foldr f [] xs where
+       f (Left a) xs2 = a : xs2
+       f (Right _) xs2 = xs2
+
+2. rights' xs = foldr f [] xs where
+    f (Right a) xs2 = a : xs2
+    f (Left _) xs2 = xs2
+
+3. partitionEithers' xs = (lefts' xs, rights' xs)
+
+4. eitherMaybe' :: (b -> c) -> Either a b -> Maybe c
+   eitherMaybe' _ (Left _) = Nothing
+   eitherMaybe' f (Right b) = Just (f b)
+
+5. either' :: (a -> c) -> (b -> c) -> Either a b -> c
+   either' fa _  (Left a)  = fa a
+   either' _  fb (Right b) = fb b
+
+
+6. eitherMaybe'' :: (b -> c) -> Either a b -> Maybe c
+   eitherMaybe'' f x = either' (\y -> Nothing) (\y -> Just $ f y) x
+
+### Unfolds
+
+### Write your own iterate and unfoldr
+
+1.
+myIterate :: (a -> a) -> a -> [a]
+myIterate f x = x : (myIterate f (f x))
+
+2.
+myUnfoldr :: (b -> Maybe (a, b)) -> b -> [a]
+myUnfoldr f x = temp (f x) where
+    temp (Nothing) = []
+    temp (Just (a, b)) = a : myUnfoldr f b
+
+3.
+betterIterate :: (a -> a) -> a -> [a]
+betterIterate f x = myUnfoldr (\b -> Just (b, f b)) x
+
+### Finally something other than a list!
+
+data BinaryTree a =
+    Leaf
+    | Node (BinaryTree a) a (BinaryTree a)
+    deriving (Eq, Ord, Show)
+
+1.
+unfold :: (a -> Maybe (a,b,a)) -> a -> BinaryTree b
+unfold f x = temp $ f x where
+    temp Nothing = Leaf
+    temp (Just (a1, b, a2)) = Node (unfold f a1) b (unfold f a2)
+
+2.
+treeBuild :: Integer -> BinaryTree Integer
+treeBuild n = unfold f 0
+    where f x
+            | x == n = Nothing
+            | otherwise = Just (x+1, x, x+1)
+
+
+
+
+
+
+
+
+
+

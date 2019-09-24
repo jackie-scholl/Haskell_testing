@@ -1,0 +1,213 @@
+# Chapter 15: Monoids and Semigroups
+
+## 15.10 Reusing algebras by asking for algebras
+
+### Exercise: Optional Monoid
+
+data Optional a =
+      Nada
+    | Only a
+    deriving (Eq, Show)
+
+1. asked for
+instance Monoid a => Monoid (Optional a) where
+    mempty = Nada
+    mappend (Nada)   (Nada)   = Nada
+    mappend (Only a) (Nada)   = Only a
+    mappend (Nada)   (Only b) = Only b
+    mappend (Only a) (Only b) = Only (a <> b)
+    
+2. first
+instance Monoid (Optional a) where
+    mempty = Nada
+    mappend (Nada)   (Nada)   = Nada
+    mappend (Only a) (Nada)   = Only a
+    mappend (Nada)   (Only b) = Only b
+    mappend (Only a) (Only b) = Only (a)
+    
+    
+3. last
+instance Monoid (Optional a) where
+    mempty = Nada
+    mappend (Nada)   (Nada)   = Nada
+    mappend (Only a) (Nada)   = Only a
+    mappend (Nada)   (Only b) = Only b
+    mappend (Only a) (Only b) = Only (b)
+    
+## 15.11 Madness
+
+
+
+madlibbinBetter' e adv noun adj = mconcat [e, "! he said ", adv,
+    " as he jumped into his car ", noun, " and drove off with his ", adj,
+    " wife."]
+
+## 15.15 Chapter exercises
+
+### Semigroup exercises
+
+1.
+
+data Trivial = Trivial deriving (Eq, Show)
+instance Semigroup Trivial where
+    _ <> _ = Trivial
+
+semigroupAssoc :: (Eq m, Semigroup m) => m -> m -> m -> Bool
+semigroupAssoc a b c = (a <> (b <> c)) == ((a <> b) <> c)
+
+type TrivAssoc = Trivial -> Trivial -> Trivial -> Bool
+
+main :: IO ()
+main =
+quickCheck (semigroupAssoc :: TrivAssoc)
+
+2.
+newtype Identity a = Identity a
+instance Semigroup a => Semigroup (Identity a) where
+    Identity a <> Identity b = Identity $ a <> b
+
+3.
+data Two a b = Two a b deriving (Show, Eq)
+instance (Semigroup a, Semigroup b) => Semigroup (Two a b) where
+    Two a b <> Two a' b' = Two (a <> a') (b <> b')
+
+4. No thanks
+5. No thanks
+
+6.
+newtype BoolConj =
+    BoolConj Bool deriving (Show, Eq)
+instance Semigroup BoolConj where
+    BoolConj True <> BoolConj True = BoolConj True
+    BoolConj _ <> BoolConj _ = BoolConj False
+
+7.
+newtype BoolDisj =
+    BoolDisj Bool deriving (Show, Eq)
+instance Semigroup BoolDisj where
+    BoolDisj False <> BoolDisj False = BoolDisj False
+    BoolDisj _ <> BoolDisj _ = BoolDisj True
+    
+    
+8.
+data Or a b =
+      Fst a
+    | Snd b deriving (Show, Eq)
+instance Semigroup (Or a b) where
+    Snd a <> _ = Snd a
+    Fst _ <> Snd b = Snd b
+    Fst _ <> Fst b = Fst b
+
+9.
+newtype Combine a b =
+    Combine { unCombine :: (a -> b) }
+instance Semigroup b => Semigroup (Combine a b) where
+    Combine f <> Combine f' = Combine (\x -> f x <> f' x)
+
+10.
+newtype Comp a =
+    Comp { unComp :: (a -> a) }
+instance Semigroup (Comp a) where
+    Comp f <> Comp f' = Comp (f . f')
+
+11.
+data Validation a b =
+    Failure a | Success b
+    deriving (Eq, Show)
+instance Semigroup a => Semigroup (Validation a b) where
+    Success a <> _ = Success a
+    _ <> Success b = Success b
+    Failure a <> Failure b = Failure $ a <> b
+
+
+
+
+
+
+### Monoid exercises
+
+1.
+
+
+data Trivial = Trivial deriving (Eq, Show)
+instance Semigroup Trivial where
+    _ <> _ = Trivial
+instance Monoid Trivial where
+    mempty = Trivial
+    mappend = (<>)
+
+semigroupAssoc :: (Eq m, Semigroup m) => m -> m -> m -> Bool
+semigroupAssoc a b c = (a <> (b <> c)) == ((a <> b) <> c)
+
+type TrivAssoc = Trivial -> Trivial -> Trivial -> Bool
+
+main :: IO ()
+main =
+quickCheck (semigroupAssoc :: TrivAssoc)
+
+2.
+newtype Identity a = Identity a
+instance Semigroup a => Semigroup (Identity a) where
+    Identity a <> Identity b = Identity $ a <> b
+instance (Semigroup a, Monoid a) => Monoid (Identity a) where
+    mempty = Identity (mempty)
+    mappend = (<>)
+
+3.
+data Two a b = Two a b deriving (Show, Eq)
+instance (Semigroup a, Semigroup b) => Semigroup (Two a b) where
+    Two a b <> Two a' b' = Two (a <> a') (b <> b')
+instance (Semigroup a, Monoid a, Semigroup b, Monoid b) => Monoid (Two a b) where
+    mempty = Two (mempty) (mempty)
+    mappend = (<>)
+
+4.
+newtype BoolConj =
+    BoolConj Bool deriving (Show, Eq)
+instance Semigroup BoolConj where
+    BoolConj True <> BoolConj True = BoolConj True
+    BoolConj _ <> BoolConj _ = BoolConj False
+instance Monoid BoolConj where
+    mempty = BoolConj True
+    mappend = (<>)
+
+5.
+newtype BoolDisj =
+    BoolDisj Bool deriving (Show, Eq)
+instance Semigroup BoolDisj where
+    BoolDisj False <> BoolDisj False = BoolDisj False
+    BoolDisj _ <> BoolDisj _ = BoolDisj True
+instance Monoid BoolDisj where
+    mempty = BoolDisj False
+    mappend = (<>)
+
+6.
+newtype Combine a b =
+    Combine { unCombine :: (a -> b) }
+instance Semigroup b => Semigroup (Combine a b) where
+    Combine f <> Combine f' = Combine (\x -> f x <> f' x)
+instance (Semigroup b, Monoid b) => Monoid (Combine a b) where
+    mempty = Combine (\x -> mempty)
+    mappend = (<>)
+
+7.
+newtype Comp a =
+    Comp { unComp :: (a -> a) }
+instance Semigroup (Comp a) where
+    Comp f <> Comp f' = Comp (f . f')
+instance Monoid (Comp a) where
+    mempty = Comp (id)
+    mappend = (<>)
+
+8.
+newtype Mem s a =
+    Mem {
+        runMem :: s -> (a,s)
+    }
+instance Monoid a => Monoid (Mem s a) where
+    mempty = Mem (\s -> (mempty, s))
+    mappend (Mem f) (Mem f') =
+        Mem (\s -> (mappend (fst $ f s) (fst $ f' $ snd $ f s),
+                    (snd $ f' $ snd $ f s)))
+
+

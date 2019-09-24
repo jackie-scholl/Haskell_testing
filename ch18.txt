@@ -1,0 +1,78 @@
+# Chapter 18
+
+## 18.2 Sorry — a monad is not a burrito
+
+fmap :: Monad m => (a -> m b) -> m a -> m (m b)
+join :: Monad m => m (m a) -> m a
+
+bind :: Monad m => (a -> m b) -> m a -> m b
+bind f = join . fmap f
+
+^^^^ whoo!
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
